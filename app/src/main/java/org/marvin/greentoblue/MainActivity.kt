@@ -503,6 +503,7 @@ class MainActivity : AppCompatActivity() {
             db.rawQuery(query, null).use { curr ->
                 if (curr.moveToFirst()) {
                     do {
+                        Log.d(MainActivity::class.java.name, chatMetadata.chatName + " " + chats.size.toString())
                         val timestamp = curr.getLong(0)
                         val chatData = curr.getString(1)
                         var mediaName = curr.getString(2)
@@ -515,11 +516,12 @@ class MainActivity : AppCompatActivity() {
                         var mediaURI = Uri.EMPTY
                         if (mediaHash.isNotEmpty()) {
                             hasMedia = true
-                            mediaFiles.find { it.fileHash.trim() == mediaHash.trim() }?.let {
+                            val data = chatDatabase.getMediaFileByHash(mediaHash.trim())
+                            if (data.first != Uri.EMPTY) {
                                 mediaFound = true
                                 mediaFoundCount += 1
-                                mediaURI = it.fileUri
-                                mediaName = it.fileName
+                                mediaURI = data.first
+                                mediaName = data.second
                             }
                         }
 

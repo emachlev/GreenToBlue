@@ -364,6 +364,18 @@ class ChatDatabaseAdapter(context: Context) :
         }
     }
 
+    fun getMediaFileByHash(hash: String) : Pair<Uri, String> {
+        readableDatabase.use { db ->
+            val query = "SELECT media_uri, media_filename FROM $TABLE_MEDIA WHERE media_hash = '$hash'"
+            db.rawQuery(query, null).use { curr ->
+                if (curr.moveToFirst()) {
+                    return Pair(Uri.parse(curr.getString(curr.getColumnIndex(COL_MEDIA_URI))), curr.getString(curr.getColumnIndex(COL_MEDIA_FILENAME)))
+                }
+                return Pair(Uri.EMPTY, "");
+            }
+        }
+    }
+
     fun updateMediaFoundCount(chatID: String, mediaFoundCount: Int) {
         writableDatabase.use { db ->
             val cv = ContentValues()
