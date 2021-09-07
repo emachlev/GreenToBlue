@@ -40,7 +40,8 @@ class ChunkAdapter (private val activity: ChatExportActivity, private val chunkM
         holder.txtChunkDetails.text = "${chunk.chatCount} chats, with ${chunk.mediaURI.size} media files"
         holder.btnExport.setOnClickListener {
             val txtFile = File(activity.filesDir ,"WhatsApp Chat with ${chunk.chatName}.txt")
-            txtFile.writeBytes(chunk.data)
+            val chunkFile = File(activity.filesDir ,"chunks/chunk_${chunk.chatID}_${chunk.chunkID}.txt")
+            txtFile.writeBytes(chunkFile.readBytes())
 
             val txtFileUri = GenericFileProvider.getUriForFile(activity, activity.applicationContext.packageName, txtFile)
 

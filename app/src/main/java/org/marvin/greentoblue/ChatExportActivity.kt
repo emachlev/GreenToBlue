@@ -27,7 +27,7 @@ class ChatExportActivity : AppCompatActivity() {
 
         private const val CHAT_METADATA_RESULT_CODE = 100
 
-        private var DEFAULT_CHUNK_SIZE = 200
+        private var DEFAULT_CHUNK_SIZE = 1500
         private var DEFAULT_MY_NAME = "Green To Blue"
 
         private var INTENT_CHAT_METADATA = "chatmetadata"
@@ -146,8 +146,14 @@ class ChatExportActivity : AppCompatActivity() {
     }
 
     private fun makeChunks() {
-        chatDatabase.makeChunks(chatMetadata, myName, chunkSize, chunks)
-        chatDatabase.clearChunks(chatMetadata.chatID)
+        chunkSize = findViewById<EditText>(R.id.editTxtChunkSize)?.text.toString().toInt()
+        myName = findViewById<EditText>(R.id.editTxtMyName)?.text.toString()
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putInt(PREF_CHUNK_SIZE, chunkSize).apply()
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(PREF_MY_NAME, myName).apply()
+
+        chatDatabase.clearChunks(this, chatMetadata.chatID)
+        chatDatabase.makeChunks(this, chatMetadata, myName, chunkSize, chunks)
         chatDatabase.writeChunks(chatMetadata, chunks)
     }
 

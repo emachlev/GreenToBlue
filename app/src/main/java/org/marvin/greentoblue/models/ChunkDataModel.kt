@@ -8,6 +8,6 @@ data class ChunkDataModel (
     val chatName: String,
     val chunkID: Int,
     var chatCount: Int = 0,
-    var data: ByteArray = byteArrayOf(),
+    var data: Uri = Uri.EMPTY,
     val mediaURI: ArrayList<Uri> = arrayListOf()
 )

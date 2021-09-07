@@ -390,14 +390,19 @@ class ChatDatabaseAdapter(context: Context) :
 
     //region Chunks
 
-    fun clearChunks(chatID: String) {
+    fun clearChunks(context: Context, chatID: String) {
         writableDatabase.use { db ->
             db.delete(TABLE_CHUNK, "$COL_CHAT_KEY=?", arrayOf(chatID))
             db.delete(TABLE_CHUNK_MEDIA, "$COL_CHAT_KEY=?", arrayOf(chatID))
         }
+        val folder = File(context.filesDir, "chunks")
+        folder.walk().filter { it.name.startsWith("chunk_$chatID") }.forEach {
+            it.delete()
+        }
     }
 
     fun makeChunks(
+        context: Context,
         chatMetadata: ChatMetadataModel,
         myName: String,
         chunkSize: Int,
@@ -483,7 +488,10 @@ class ChatDatabaseAdapter(context: Context) :
                             data.write(endLine.toByteArray())
                             data.close()
 
-                            chunk.data = data.toByteArray()
+                            val chunkFile = File(context.filesDir ,"chunks/chunk_${chunk.chatID}_${chunk.chunkID}.txt")
+                            chunkFile.parentFile?.mkdirs()
+                            chunkFile.createNewFile()
+                            chunkFile.writeBytes(data.toByteArray())
 
                             chunks.add(chunk)
 
@@ -499,7 +507,10 @@ class ChatDatabaseAdapter(context: Context) :
                     endLine = "$timestamp - Green to Blue: ENDING OF CHUNK $chunkCounter\n"
                     data.write(endLine.toByteArray())
                     data.close()
-                    chunk.data = data.toByteArray()
+                    val chunkFile = File(context.filesDir ,"chunks/chunk_${chunk.chatID}_${chunk.chunkID}.txt")
+                    chunkFile.parentFile?.mkdirs()
+                    chunkFile.createNewFile()
+                    chunkFile.writeBytes(data.toByteArray())
                     chunks.add(chunk)
                 }
             }
@@ -516,7 +527,7 @@ class ChatDatabaseAdapter(context: Context) :
                     chunkCV.put(COL_CHAT_NAME, chatMetadata.chatName)
                     chunkCV.put(COL_CHUNK_CHAT_COUNTER, chunk.chatCount)
                     chunkCV.put(COL_CHUNK_COUNTER, chunk.chunkID)
-                    chunkCV.put(COL_CHUNK_BLOB, chunk.data)
+                    chunkCV.put(COL_CHUNK_BLOB, "")
                     db.insert(TABLE_CHUNK, null, chunkCV)
 
                     chunk.mediaURI.forEach { uri ->
@@ -597,7 +608,7 @@ class ChatDatabaseAdapter(context: Context) :
                             curr.getString(curr.getColumnIndex(COL_CHAT_NAME)),
                             curr.getInt(curr.getColumnIndex(COL_CHUNK_COUNTER)),
                             curr.getInt(curr.getColumnIndex(COL_CHUNK_CHAT_COUNTER)),
-                            curr.getBlob(curr.getColumnIndex(COL_CHUNK_BLOB))
+                            Uri.parse(curr.getString(curr.getColumnIndex(COL_CHUNK_BLOB)))
                         )
                         val chunkUriQuery =
                             "SELECT * FROM $TABLE_CHUNK_MEDIA WHERE $COL_CHAT_KEY = '$chatID' AND $COL_CHUNK_COUNTER = ${chunk.chunkID}"

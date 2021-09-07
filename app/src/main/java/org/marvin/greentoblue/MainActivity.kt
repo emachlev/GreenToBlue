@@ -53,6 +53,8 @@ class MainActivity : AppCompatActivity() {
 
         private const val DATABASE_MSGSTORE = "msgstore.db"
         private const val DATABASE_WA = "wa.db"
+
+        private val FILE_BLACKLIST = listOf(".txt")
     }
 
     class FBChatData(val chatMetadata: ChatMetadataModel, val chats: List<ChatDataModel>)
@@ -515,9 +517,9 @@ class MainActivity : AppCompatActivity() {
                         var mediaFound = false
                         var mediaURI = Uri.EMPTY
                         if (mediaHash.isNotEmpty()) {
-                            hasMedia = true
                             val data = chatDatabase.getMediaFileByHash(mediaHash.trim())
-                            if (data.first != Uri.EMPTY) {
+                            if (data.first != Uri.EMPTY && !FILE_BLACKLIST.any { data.second.toLowerCase().endsWith(it) }) {
+                                hasMedia = true
                                 mediaFound = true
                                 mediaFoundCount += 1
                                 mediaURI = data.first
