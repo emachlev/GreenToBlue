@@ -2,6 +2,7 @@ package org.marvin.greentoblue.listitemadapters
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat.startActivity
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import org.marvin.greentoblue.ChatExportActivity
 import org.marvin.greentoblue.GenericFileProvider
@@ -48,10 +50,15 @@ class ChunkAdapter (private val activity: ChatExportActivity, private val chunkM
             val telegramIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
             telegramIntent.type = "*/*"
 
-            val finalUris = chunk.mediaURI
-            finalUris.add(txtFileUri)
+            val mediaUris = chunk.mediaURI
+            val mediaFile = File(activity.filesDir ,"media_${chunk.chatID}_${chunk.chunkID}.g2bmedia")
+            mediaFile.createNewFile()
+            mediaFile.writeText(mediaUris.joinToString("\r\n"))
 
-            telegramIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, finalUris)
+            val toSend: ArrayList<Uri> = arrayListOf(GenericFileProvider.getUriForFile(activity, activity.applicationContext.packageName, mediaFile))
+            toSend.add(txtFileUri)
+
+            telegramIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, toSend)
             activity.startActivity(telegramIntent)
         }
     }

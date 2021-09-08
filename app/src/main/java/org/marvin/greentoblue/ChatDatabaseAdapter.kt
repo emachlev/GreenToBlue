@@ -395,8 +395,12 @@ class ChatDatabaseAdapter(context: Context) :
             db.delete(TABLE_CHUNK, "$COL_CHAT_KEY=?", arrayOf(chatID))
             db.delete(TABLE_CHUNK_MEDIA, "$COL_CHAT_KEY=?", arrayOf(chatID))
         }
-        val folder = File(context.filesDir, "chunks")
-        folder.walk().filter { it.name.startsWith("chunk_$chatID") }.forEach {
+        val folder_chunks = File(context.filesDir, "chunks")
+        folder_chunks.walk().filter { it.name.startsWith("chunk_$chatID") }.forEach {
+            it.delete()
+        }
+        val folder_media = File(context.filesDir, ".")
+        folder_media.walk().filter { it.name.startsWith("media_$chatID") }.forEach {
             it.delete()
         }
     }
